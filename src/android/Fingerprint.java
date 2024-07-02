@@ -66,12 +66,23 @@ public class Fingerprint extends CordovaPlugin {
         PluginError error = canAuthenticate(requireStrongBiometrics);
         if (error != null) {
             sendError(error);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P){
-            sendSuccess("biometric");
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            boolean finger = isFingerprintAvailable();
+            boolean face = isFaceRecognitionAvailable();
+
+            if (face) {
+                sendSuccess(finger ? "biometric" : "face");
+            } else {
+                sendSuccess("finger");
+            }
         } else {
             sendSuccess("finger");
         }
     }
+
     private void executeRegisterBiometricSecret(JSONArray args) {
         // should at least contains the secret
         if (args == null) {
@@ -153,6 +164,16 @@ public class Fingerprint extends CordovaPlugin {
             default:
                 return null;
         }
+    }
+
+    private boolean isFaceRecognitionAvailable() {
+        PackageManager packageManager = BiometricManager.from(cordova.getContext()).getPackageManager();
+        return packageManager.hasSystemFeature(PackageManager.FEATURE_FACE);
+    }
+
+    private boolean isFingerprintAvailable() {
+        PackageManager packageManager = BiometricManager.from(cordova.getContext()).getPackageManager();
+        return packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
     }
 
     private void sendError(int code, String message) {
