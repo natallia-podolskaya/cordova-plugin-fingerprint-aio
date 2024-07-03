@@ -27,6 +27,8 @@ public class Fingerprint extends CordovaPlugin {
 
     private CallbackContext mCallbackContext = null;
     private PromptInfo.Builder mPromptInfoBuilder;
+    private boolean isFaceRecognitionAvailable;
+    private boolean isFingerprintAvailable;
 
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
@@ -34,6 +36,8 @@ public class Fingerprint extends CordovaPlugin {
         mPromptInfoBuilder = new PromptInfo.Builder(
             this.getApplicationLabel(cordova.getActivity())
         );
+        this.isFingerprintAvailable = isFingerprintAvailable(cordova.getActivity());
+        this.isFaceRecognitionAvailable = isFaceRecognitionAvailable(cordova.getActivity());
     }
 
     public boolean execute(final String action, JSONArray args, CallbackContext callbackContext) {
@@ -70,11 +74,8 @@ public class Fingerprint extends CordovaPlugin {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            boolean finger = isFingerprintAvailable();
-            boolean face = isFaceRecognitionAvailable();
-
-            if (face) {
-                sendSuccess(finger ? "biometric" : "face");
+            if (isFaceRecognitionAvailable) {
+                sendSuccess(isFingerprintAvailable ? "biometric" : "face");
             } else {
                 sendSuccess("finger");
             }
@@ -166,14 +167,12 @@ public class Fingerprint extends CordovaPlugin {
         }
     }
 
-    private boolean isFaceRecognitionAvailable() {
-        PackageManager packageManager = BiometricManager.from(cordova.getContext()).getPackageManager();
-        return packageManager.hasSystemFeature(PackageManager.FEATURE_FACE);
+    private boolean isFaceRecognitionAvailable(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_FACE);
     }
 
-    private boolean isFingerprintAvailable() {
-        PackageManager packageManager = BiometricManager.from(cordova.getContext()).getPackageManager();
-        return packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
+    private boolean isFingerprintAvailable(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
     }
 
     private void sendError(int code, String message) {
