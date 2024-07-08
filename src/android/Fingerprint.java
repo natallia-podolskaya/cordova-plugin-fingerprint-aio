@@ -66,8 +66,7 @@ public class Fingerprint extends CordovaPlugin {
     }
 
     private void executeIsAvailable(JSONArray args) {
-        boolean requireStrongBiometrics = new Args(args).getBoolean("requireStrongBiometrics", false);
-        PluginError error = canAuthenticate(requireStrongBiometrics);
+        PluginError error = canAuthenticate();
         if (error != null) {
             sendError(error);
             return;
@@ -106,8 +105,7 @@ public class Fingerprint extends CordovaPlugin {
     }
 
     private void runBiometricActivity(JSONArray args, BiometricActivityType type) {
-        boolean requireStrongBiometrics = determineStrongBiometricsRequired(type);
-        PluginError error = canAuthenticate(requireStrongBiometrics);
+        PluginError error = canAuthenticate();
         if (error != null) {
             sendError(error);
             return;
@@ -153,8 +151,8 @@ public class Fingerprint extends CordovaPlugin {
         }
     }
 
-    private PluginError canAuthenticate(boolean requireStrongBiometrics) {
-        int error = BiometricManager.from(cordova.getContext()).canAuthenticate(requireStrongBiometrics ? BiometricManager.Authenticators.BIOMETRIC_STRONG : BiometricManager.Authenticators.BIOMETRIC_WEAK);
+    private PluginError canAuthenticate() {
+        int error = BiometricManager.from(cordova.getContext()).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK);
         switch (error) {
             case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
             case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
