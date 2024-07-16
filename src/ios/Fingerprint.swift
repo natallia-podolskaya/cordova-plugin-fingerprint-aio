@@ -83,10 +83,10 @@ enum PluginError:Int {
         let authenticationContext = LAContext();
         let errorResponse: [AnyHashable: Any] = [
             "message": "Something went wrong"
-        ];
+        ]
         var pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: errorResponse);
         var reason = "Authentication";
-        var policy:LAPolicy = .deviceOwnerAuthentication;
+        var policy: LAPolicy = .deviceOwnerAuthentication;
         let data  = command.arguments[0] as? [String: Any];
 
         if let disableBackup = data?["disableBackup"] as! Bool? {
@@ -96,7 +96,7 @@ enum PluginError:Int {
             } else {
                 if let fallbackButtonTitle = data?["fallbackButtonTitle"] as! String? {
                     authenticationContext.localizedFallbackTitle = fallbackButtonTitle;
-                }else{
+                } else {
                     authenticationContext.localizedFallbackTitle = "Use Pin";
                 }
             }
@@ -111,13 +111,12 @@ enum PluginError:Int {
             policy,
             localizedReason: reason,
             reply: { [unowned self] (success, error) -> Void in
-                if( success ) {
+                if (success) {
                     pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "Success");
-                }else {
-                    if (error != nil) {
-
+                } else {
+                    if let error = error {
                         var errorCodes = [Int: ErrorCodes]()
-                        var errorResult: [String : Any] = ["code":  PluginError.BIOMETRIC_UNKNOWN_ERROR.rawValue, "message": error?.localizedDescription ?? ""];
+                        var errorResult: [String : Any] = ["code": PluginError.BIOMETRIC_UNKNOWN_ERROR.rawValue, "message": error.localizedDescription];
 
                         errorCodes[1] = ErrorCodes(code: PluginError.BIOMETRIC_AUTHENTICATION_FAILED.rawValue)
                         errorCodes[2] = ErrorCodes(code: PluginError.BIOMETRIC_DISMISSED.rawValue)
@@ -126,9 +125,9 @@ enum PluginError:Int {
                         errorCodes[7] = ErrorCodes(code: PluginError.BIOMETRIC_NOT_ENROLLED.rawValue)
                         errorCodes[8] = ErrorCodes(code: PluginError.BIOMETRIC_LOCKED_OUT.rawValue)
 
-                        let errorCode = abs(error!._code)
+                        let errorCode = abs(error._code)
                         if let e = errorCodes[errorCode] {
-                           errorResult = ["code": e.code, "message": error!.localizedDescription];
+                            errorResult = ["code": e.code, "message": error.localizedDescription];
                         }
 
                         pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: errorResult);
@@ -136,7 +135,7 @@ enum PluginError:Int {
                 }
                 self.commandDelegate.send(pluginResult, callbackId:command.callbackId);
             }
-        );
+        )
     }
 
     func saveSecret(_ secretStr: String, command: CDVInvokedUrlCommand) {
